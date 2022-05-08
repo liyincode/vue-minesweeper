@@ -58,8 +58,21 @@ function updateNumbers() {
   })
 }
 
+const numberColors = [
+  'text-gray',
+  'text-blue',
+  'text-green',
+  'text-yellow',
+  'text-orange',
+  'text-red',
+  'text-purple',
+  'text-pink',
+]
+
 function getBlockClass(block: BlockState) {
-  return block.mine ? 'text-red' : 'text-gray'
+  return block.mine
+    ? 'bg-red'
+    : numberColors[block.adjacentMines]
 }
 
 generateMines()
@@ -82,9 +95,10 @@ function onClick(x, y) {
         <button
           v-for="item, x in raw"
           :key="x"
-          w-10 h-10 border
+          w-10 h-10 m="0.5"
           flex items-center justify-center
-          hover:bg-gray
+          hover="bg-gray/10"
+          border="1 gray-400/10"
           :class="getBlockClass(item)"
           @click="onClick(x, y )"
         >
