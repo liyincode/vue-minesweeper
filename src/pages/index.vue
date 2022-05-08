@@ -92,8 +92,11 @@ const numberColors = [
 ]
 
 function getBlockClass(block: BlockState) {
-  if (!block.revealed)
+  if (block.flagged)
     return 'bg-gray-500/10'
+
+  if (!block.revealed)
+    return 'bg-gray-500/10 hover:bg-gray-500/20'
 
   return block.mine
     ? 'bg-red-500/50'
@@ -101,7 +104,7 @@ function getBlockClass(block: BlockState) {
 }
 
 let mineGenerated = false
-const dev = true
+const dev = false
 function onClick(block: BlockState) {
   if (!mineGenerated) {
     generateMines(block)
@@ -125,6 +128,13 @@ function expandZero(block: BlockState) {
     })
 }
 
+function rightClick(block: BlockState) {
+  if (block.revealed)
+    return
+
+  block.flagged = !block.flagged
+}
+
 </script>
 
 <template>
@@ -141,12 +151,15 @@ function expandZero(block: BlockState) {
           :key="x"
           w-10 h-10 m="0.5"
           flex items-center justify-center
-          hover="bg-gray/10"
           border="1 gray-400/10"
           :class="getBlockClass(block)"
           @click="onClick(block)"
+          @contextmenu.prevent="rightClick(block)"
         >
-          <template v-if="block.revealed || dev">
+          <template v-if="block.flagged">
+            <div i-mdi-flag text-red />
+          </template>
+          <template v-else-if="block.revealed || dev">
             <div v-if="block.mine" i-mdi-mine />
             <div v-else>
               {{ block.adjacentMines }}
