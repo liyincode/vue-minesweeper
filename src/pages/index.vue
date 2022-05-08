@@ -8,8 +8,8 @@ interface BlockState {
   adjacentMines: number
 }
 
-const WIDTH = 10
-const HEIGHT = 10
+const WIDTH = 5
+const HEIGHT = 5
 
 const directions = [
   [1, 1],
@@ -22,7 +22,7 @@ const directions = [
   [0, 1],
 ]
 
-const state = reactive(
+const state = ref(
   Array.from({ length: HEIGHT },
     (_, y) => Array.from(
       { length: WIDTH },
@@ -37,7 +37,7 @@ const state = reactive(
 )
 
 function generateMines(initial: BlockState) {
-  for (const row of state) {
+  for (const row of state.value) {
     for (const block of row) {
       if (Math.abs(initial.x - block.x) <= 1)
         continue
@@ -53,7 +53,7 @@ function generateMines(initial: BlockState) {
 
 // 计算旁边有多少炸弹💣
 function updateNumbers() {
-  state.forEach((raw, y) => {
+  state.value.forEach((raw, y) => {
     raw.forEach((block, x) => {
       if (block.mine)
         return
@@ -75,7 +75,7 @@ function getSiblings(block: BlockState): BlockState[] {
       if (x2 < 0 || x2 >= WIDTH || y2 < 0 || y2 >= HEIGHT)
         return undefined
 
-      return state[y2][x2]
+      return state.value[y2][x2]
     })
     .filter(Boolean) as BlockState[]
 }
@@ -111,6 +111,9 @@ function onClick(block: BlockState) {
     mineGenerated = true
   }
 
+  if (block.mine)
+    alert('You Cheat!')
+
   block.revealed = true
   expandZero(block)
 }
@@ -133,6 +136,21 @@ function rightClick(block: BlockState) {
     return
 
   block.flagged = !block.flagged
+}
+
+watchEffect(checkGameState)
+
+function checkGameState() {
+  const blocks = state.value.flat()
+
+  // 确保每个都被翻开或被标记了
+  if (blocks.every(block => block.flagged || block.revealed)) {
+    // 如果有一个标记错了就输了
+    if (blocks.some(block => block.flagged && !block.mine))
+      alert('You cheat!')
+    else
+      alert('You win!')
+  }
 }
 
 </script>
