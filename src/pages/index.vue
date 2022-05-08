@@ -73,18 +73,27 @@ function onClick(x, y) {
 <template>
   <div>
     Minesweeper
-    <div v-for="raw ,y in state" :key="y">
-      <button
-        v-for="item, x in raw"
-        :key="x"
-        w-10 h-10 border
-        hover:bg-gray
-        :class="getBlockClass(item)"
-        @click="onClick(x, y )"
+    <div p5>
+      <div
+        v-for="raw ,y in state"
+        :key="y"
+        flex items-center justify-center
       >
-        <!-- {{ item.x }},{{ item.y }} -->
-        {{ item.mine ? "x" : item.adjacentMines }}
-      </button>
+        <button
+          v-for="item, x in raw"
+          :key="x"
+          w-10 h-10 border
+          flex items-center justify-center
+          hover:bg-gray
+          :class="getBlockClass(item)"
+          @click="onClick(x, y )"
+        >
+          <div v-if="item.mine" i-mdi-mine />
+          <div v-else>
+            {{ item.adjacentMines }}
+          </div>
+        </button>
+      </div>
     </div>
   </div>
 </template>
