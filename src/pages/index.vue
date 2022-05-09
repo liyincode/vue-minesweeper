@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { BlockState } from '~/types'
+import { isDev, toggleDev } from '~/composables'
 
 const WIDTH = 5
 const HEIGHT = 5
@@ -97,7 +98,6 @@ function getBlockClass(block: BlockState) {
 }
 
 let mineGenerated = false
-const dev = false
 function onClick(block: BlockState) {
   if (!mineGenerated) {
     generateMines(block)
@@ -151,6 +151,9 @@ function checkGameState() {
 <template>
   <div>
     Minesweeper
+    <button @click="toggleDev()">
+      {{ isDev }}
+    </button>
     <div p5>
       <div
         v-for="raw ,y in state"
@@ -170,7 +173,7 @@ function checkGameState() {
           <template v-if="block.flagged">
             <div i-mdi-flag text-red />
           </template>
-          <template v-else-if="block.revealed || dev">
+          <template v-else-if="block.revealed || isDev">
             <div v-if="block.mine" i-mdi-mine />
             <div v-else>
               {{ block.adjacentMines }}
