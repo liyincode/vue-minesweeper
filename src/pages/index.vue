@@ -74,29 +74,6 @@ function getSiblings(block: BlockState): BlockState[] {
     .filter(Boolean) as BlockState[]
 }
 
-const numberColors = [
-  'text-gray',
-  'text-blue',
-  'text-green',
-  'text-yellow',
-  'text-orange',
-  'text-red',
-  'text-purple',
-  'text-pink',
-]
-
-function getBlockClass(block: BlockState) {
-  if (block.flagged)
-    return 'bg-gray-500/10'
-
-  if (!block.revealed)
-    return 'bg-gray-500/10 hover:bg-gray-500/20'
-
-  return block.mine
-    ? 'bg-red-500/50'
-    : numberColors[block.adjacentMines]
-}
-
 let mineGenerated = false
 function onClick(block: BlockState) {
   if (!mineGenerated) {
@@ -160,26 +137,13 @@ function checkGameState() {
         :key="y"
         flex items-center justify-center
       >
-        <button
+        <MineBlock
           v-for="block, x in raw"
           :key="x"
-          w-10 h-10 m="0.5"
-          flex items-center justify-center
-          border="1 gray-400/10"
-          :class="getBlockClass(block)"
+          :block="block"
           @click="onClick(block)"
           @contextmenu.prevent="rightClick(block)"
-        >
-          <template v-if="block.flagged">
-            <div i-mdi-flag text-red />
-          </template>
-          <template v-else-if="block.revealed || isDev">
-            <div v-if="block.mine" i-mdi-mine />
-            <div v-else>
-              {{ block.adjacentMines }}
-            </div>
-          </template>
-        </button>
+        />
       </div>
     </div>
   </div>
