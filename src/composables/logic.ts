@@ -32,7 +32,7 @@ export class GamePlay {
           revealed: false,
         }),
       ),
-    ),
+    )
   }
 
   generateMines(initial: BlockState) {
