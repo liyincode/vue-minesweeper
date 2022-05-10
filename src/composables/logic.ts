@@ -13,12 +13,14 @@ const directions = [
 export class GamePlay {
   state = ref<BlockState[][]>([])
   mineGenerated = false
+  gameState = ref<'playing' | 'lost' | 'won'>('playing')
 
   constructor(public width: number, public height: number) {
     this.reset()
   }
 
   reset() {
+    this.gameState.value = 'playing'
     this.mineGenerated = false
 
     this.state.value = Array.from(
@@ -80,13 +82,18 @@ export class GamePlay {
   }
 
   onClick(block: BlockState) {
+    if (this.gameState.value !== 'playing')
+      return
+
     if (!this.mineGenerated) {
       this.generateMines(block)
       this.mineGenerated = true
     }
 
-    if (block.mine)
-      alert('You Cheat!')
+    if (block.mine) {
+      this.gameState.value = 'lost'
+      this.showAllMines()
+    }
 
     block.revealed = true
     this.expandZero(block)
@@ -106,6 +113,8 @@ export class GamePlay {
   }
 
   rightClick(block: BlockState) {
+    if (this.gameState.value !== 'playing')
+      return
     if (block.revealed)
       return
 
@@ -118,10 +127,22 @@ export class GamePlay {
     // 确保每个都被翻开或被标记了
     if (blocks.every(block => block.flagged || block.revealed)) {
       // 如果有一个标记错了就输了
-      if (blocks.some(block => block.flagged && !block.mine))
-        alert('You cheat!')
-      else
-        alert('You win!')
+      if (blocks.some(block => block.flagged && !block.mine)) {
+        this.gameState.value = 'lost'
+        this.showAllMines()
+      }
+      else {
+        this.gameState.value = 'won'
+      }
     }
+  }
+
+  showAllMines() {
+    this.state.value.forEach((raw) => {
+      raw.forEach((block) => {
+        if (block.mine)
+          block.revealed = true
+      })
+    })
   }
 }
