@@ -1,3 +1,4 @@
+import type { Ref } from 'vue'
 import type { BlockState } from '~/types'
 const directions = [
   [1, 1],
@@ -10,35 +11,44 @@ const directions = [
   [0, 1],
 ]
 
+interface GameState {
+  board: BlockState[][]
+  mineGenerated: boolean
+  gameState: 'playing' | 'lost' | 'won'
+}
+
 export class GamePlay {
-  state = ref<BlockState[][]>([])
-  mineGenerated = false
-  gameState = ref<'playing' | 'lost' | 'won'>('playing')
+  state = ref<GameState>() as Ref<GameState>
 
   constructor(public width: number, public height: number) {
     this.reset()
   }
 
-  reset() {
-    this.gameState.value = 'playing'
-    this.mineGenerated = false
+  get board() {
+    return this.state.value.board
+  }
 
-    this.state.value = Array.from(
-      { length: this.height },
-      (_, y) => Array.from(
-        { length: this.width },
-        (_, x): BlockState => ({
-          x,
-          y,
-          adjacentMines: 0,
-          revealed: false,
-        }),
+  reset() {
+    this.state.value = {
+      gameState: 'playing',
+      mineGenerated: false,
+      board: Array.from(
+        { length: this.height },
+        (_, y) => Array.from(
+          { length: this.width },
+          (_, x): BlockState => ({
+            x,
+            y,
+            adjacentMines: 0,
+            revealed: false,
+          }),
+        ),
       ),
-    )
+    }
   }
 
   generateMines(initial: BlockState) {
-    for (const row of this.state.value) {
+    for (const row of this.board) {
       for (const block of row) {
         if (Math.abs(initial.x - block.x) <= 1)
           continue
@@ -54,7 +64,7 @@ export class GamePlay {
 
   // 计算旁边有多少炸弹💣
   updateNumbers() {
-    this.state.value.forEach((raw) => {
+    this.board.forEach((raw) => {
       raw.forEach((block) => {
         if (block.mine)
           return
@@ -76,22 +86,22 @@ export class GamePlay {
         if (x2 < 0 || x2 >= this.width || y2 < 0 || y2 >= this.height)
           return undefined
 
-        return this.state.value[y2][x2]
+        return this.board[y2][x2]
       })
       .filter(Boolean) as BlockState[]
   }
 
   onClick(block: BlockState) {
-    if (this.gameState.value !== 'playing')
+    if (this.state.value.gameState !== 'playing')
       return
 
-    if (!this.mineGenerated) {
+    if (!this.state.value.mineGenerated) {
       this.generateMines(block)
-      this.mineGenerated = true
+      this.state.value.mineGenerated = true
     }
 
     if (block.mine) {
-      this.gameState.value = 'lost'
+      this.state.value.gameState = 'lost'
       this.showAllMines()
     }
 
@@ -113,7 +123,7 @@ export class GamePlay {
   }
 
   rightClick(block: BlockState) {
-    if (this.gameState.value !== 'playing')
+    if (this.state.value.gameState !== 'playing')
       return
     if (block.revealed)
       return
@@ -122,23 +132,23 @@ export class GamePlay {
   }
 
   checkGameState() {
-    const blocks = this.state.value.flat()
+    const blocks = this.board.flat()
 
     // 确保每个都被翻开或被标记了
     if (blocks.every(block => block.flagged || block.revealed)) {
       // 如果有一个标记错了就输了
       if (blocks.some(block => block.flagged && !block.mine)) {
-        this.gameState.value = 'lost'
+        this.state.value.gameState = 'lost'
         this.showAllMines()
       }
       else {
-        this.gameState.value = 'won'
+        this.state.value.gameState = 'won'
       }
     }
   }
 
   showAllMines() {
-    this.state.value.forEach((raw) => {
+    this.board.forEach((raw) => {
       raw.forEach((block) => {
         if (block.mine)
           block.revealed = true
